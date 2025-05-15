@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Personalized Content Recommender</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    #chatbox {
+      width: 100%;
+      max-width: 600px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+    .chat-log {
+      height: 400px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 20px;
+      background: #f9f9f9;
+    }
+    .chat-log div {
+      margin-bottom: 12px;
+    }
+    .user-msg {
+      color: #000;
+    }
+    .bot-msg {
+      color: #007bff;
+    }
+    #userInput {
+      width: 80%;
+      padding: 10px;
+      font-size: 16px;
+    }
+    #sendBtn {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #sendBtn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Personalized Content Recommender</h1>
+
+  <div id="chatbox">
+    <div class="chat-log" id="chatLog">
+      <div class="bot-msg"><strong>Bot:</strong> Hi! Tell me your interests (e.g., "I'm interested in technology, health") and then ask for a recommendation!</div>
+    </div>
+    <input type="text" id="userInput" placeholder="Type your message here..." />
+    <button id="sendBtn" onclick="sendMessage()">Send</button>
+  </div>
+
+  <script>
+    const userId = "user_001"; // Static user ID for demonstration
+
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const chatLog = document.getElementById("chatLog");
+      const userMessage = input.value.trim();
+      if (!userMessage) return;
+
+      // Show user's message
+      chatLog.innerHTML += `<div class="user-msg"><strong>You:</strong> ${userMessage}</div>`;
+      input.value = "";
+
+      // Send request to Flask backend
+      try {
+        const response = await fetch("http://localhost:5000/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: userId, message: userMessage })
+        });
+        const data = await response.json();
+
+        // Show bot response
+        chatLog.innerHTML += `<div class="bot-msg"><strong>Bot:</strong> ${data.response}</div>`;
+        chatLog.scrollTop = chatLog.scrollHeight;
+      } catch (error) {
+        chatLog.innerHTML += `<div class="bot-msg"><strong>Bot:</strong> Sorry, I couldn't connect to the server.</div>`;
+      }
+    }
+
+    // Enter key also sends message
+    document.getElementById("userInput").addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+  </script>
+
+</body>
+</html>
